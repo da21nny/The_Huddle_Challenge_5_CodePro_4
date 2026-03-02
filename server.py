@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime, timezone
 
 app = Flask(__name__)
-TOKENS_VALIDOS = {"Token auth-secerto-123", "Token order-secreto-456"}
+TOKENS_VALIDOS = {"Token auth-secreto-123", "Token order-secreto-456"}
 DATABASE = "logs.db"
 
 def init_db():
@@ -35,18 +35,24 @@ def recibir_log():
     conn = sqlite3.connect(DATABASE)
     hora_recepcion = datetime.now(timezone.utc).isoformat()
 
+    campos_requeridos = {'timestamp', 'service', 'severity', 'message'}
     for d in datos:
+        for campo in campos_requeridos:
+            if campo not in d:
+                return jsonify({"error": f"Falta el campo '{campo}' en uno de los logs"}), 400
         conn.execute('''INSERT INTO logs (timestamp, received_at, service, severity, message)
                         VALUES (?, ?, ?, ?, ?)''',
                     (d['timestamp'], hora_recepcion, d['service'], d['severity'], d['message']))
 
-        conn.commit()
-        conn.close()
-
-        return jsonify({"status": "Logs registrados exitosamente"}), 201
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "Logs registrados exitosamente"}), 201
 
 @app.route('/logs', methods=['GET'])
 def consultar_logs():
+    if request.headers.get('Authorization') not in TOKENS_VALIDOS:
+        return jsonify({"error": "Quien sos, bro?"}), 401
+    
     query = "SELECT * FROM logs WHERE 1=1"
     params = []
 
