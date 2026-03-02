@@ -9,19 +9,26 @@ URL = "http://localhost:5000/logs"
 SERVICIOS = [
     {
         "nombre": "auth-service",
-        "token": "Token auth-secerto-123",
+        "token": "Token auth-secreto-123",
         "mensajes": [
-            ("INFO", "Usuario 'admin' inicio sesion"),
-            ("ERROR", "Conexion a BD perdida")
+            ("INFO",     "Usuario 'admin' inició sesión correctamente"),
+            ("INFO",     "Token renovado para usuario 'pepe'"),
+            ("DEBUG",    "Verificando permisos del rol 'editor'"),
+            ("WARNING",  "3 intentos fallidos de login desde IP 192.168.1.10"),
+            ("ERROR",    "Conexión a BD perdida al validar sesión"),
+            ("CRITICAL", "Posible ataque de fuerza bruta detectado"),
         ]
     },
     {
         "nombre": "order-service",
         "token": "Token order-secreto-456",
         "mensajes": [
-            ("INFO", "Pedido #1024 creado"),
-            ("WARNING", "Stock bajo")
-        ]
+            ("INFO",    "Pedido #1024 creado exitosamente"),
+            ("INFO",    "Pedido #1025 marcado como enviado"),
+            ("DEBUG",   "Calculando costo de envío para zona 3"),
+            ("WARNING", "Stock bajo en producto SKU-889"),
+            ("ERROR",   "Fallo al procesar pago del pedido #1026"),
+            ("ERROR",   "Timeout al conectar con servicio de envíos"),        ]
     }
 ]
 
