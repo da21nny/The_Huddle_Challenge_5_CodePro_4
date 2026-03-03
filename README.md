@@ -48,37 +48,6 @@ python clients.py
 
 ---
 
-## 📖 Uso de la API (Ejemplos)
-
-### Enviar un Log Manualmente (POST)
-
-Puedes usar Postman o `curl` para enviar un log individual o una lista de logs (batch).
-
-```bash
-curl -X POST http://localhost:5000/logs \
--H "Authorization: Token auth-secerto-123" \
--H "Content-Type: application/json" \
--d '{
-    "timestamp": "2026-03-02T15:30:00Z",
-    "service": "auth-service",
-    "severity": "ERROR",
-    "message": "Fallo de conexión manual"
-}'
-
-```
-
-### Consultar Logs con Filtros (GET)
-
-El endpoint soporta múltiples parámetros de búsqueda en la URL (`service`, `timestamp_start`, `timestamp_end`, `received_at_start`, `received_at_end`).
-
-```bash
-curl "http://localhost:5000/logs?service=auth-service&timestamp_start=2026-03-01" \
--H "Authorization: Token auth-secerto-123"
-
-```
-
----
-
 ## 🛠️ Tecnologías Utilizadas
 
 * **Backend:** Python, Flask
