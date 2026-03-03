@@ -2,13 +2,12 @@ from flask import Flask, request, jsonify
 import sqlite3
 from datetime import datetime, timezone
 
-app = Flask(__name__)
-TOKENS_VALIDOS = {"Token auth-secreto-123", "Token order-secreto-456"}
-DATABASE = "logs.db"
+app = Flask(__name__) # Inicializa la aplicacion
+TOKENS_VALIDOS = {"Token Servicio-A-123", "Token Servicio-B-456"} # Tokens validos para los servicios
+DATABASE = "logs.db" # Base de datos
 
-def init_db():
-    #Crea la base de datos y la tabla si no existen
-    conn = sqlite3.connect(DATABASE)
+def init_db(): # Inicializa la base de datos
+    conn = sqlite3.connect(DATABASE) # Conecta a la base de datos
 
     conn.execute('''CREATE TABLE IF NOT EXISTS logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,44 +15,44 @@ def init_db():
                     received_at TEXT,
                     service TEXT,
                     severity TEXT,
-                    message TEXT)''')
-    conn.commit()
-    conn.close()
+                    message TEXT)''') # Crea la tabla si no existe
+    conn.commit() # Guarda los cambios
+    conn.close() # Cierra la conexion
 
-@app.route('/logs', methods=['POST'])
-def recibir_log():
-    if request.headers.get('Authorization') not in TOKENS_VALIDOS:
+@app.route('/logs', methods=['POST']) # Define la ruta /logs
+def recibir_log(): # Recibe los logs
+    if request.headers.get('Authorization') not in TOKENS_VALIDOS: # Verifica que el token sea valido
         return jsonify({"error": "Quien sos, bro?"}), 401
 
-    datos = request.get_json()
-    if not datos:
+    datos = request.get_json() # Obtiene los datos del request
+    if not datos: # Verifica que los datos no esten vacios
         return jsonify({"error": "JSON invalido"}), 400
 
-    if isinstance(datos, dict):
-        datos = [datos]
+    if isinstance(datos, dict): # Verifica que los datos sean un diccionario
+        datos = [datos] # Convierte los datos a una lista
 
-    conn = sqlite3.connect(DATABASE)
-    hora_recepcion = datetime.now(timezone.utc).isoformat()
+    conn = sqlite3.connect(DATABASE) # Conecta a la base de datos
+    hora_recepcion = datetime.now(timezone.utc).isoformat() # Obtiene la hora de recepcion
 
-    campos_requeridos = {'timestamp', 'service', 'severity', 'message'}
-    for d in datos:
-        for campo in campos_requeridos:
-            if campo not in d:
+    campos_requeridos = {'timestamp', 'service', 'severity', 'message'} # Campos requeridos
+    for d in datos: # Itera sobre los datos
+        for campo in campos_requeridos: # Itera sobre los campos requeridos
+            if campo not in d: # Verifica que el campo no este en los datos
                 return jsonify({"error": f"Falta el campo '{campo}' en uno de los logs"}), 400
         conn.execute('''INSERT INTO logs (timestamp, received_at, service, severity, message)
                         VALUES (?, ?, ?, ?, ?)''',
                     (d['timestamp'], hora_recepcion, d['service'], d['severity'], d['message']))
 
-    conn.commit()
-    conn.close()
+    conn.commit() # Guarda los cambios
+    conn.close() # Cierra la conexion
     return jsonify({"status": "Logs registrados exitosamente"}), 201
 
-@app.route('/logs', methods=['GET'])
-def consultar_logs():
-    if request.headers.get('Authorization') not in TOKENS_VALIDOS:
+@app.route('/logs', methods=['GET']) # Define la ruta /logs
+def consultar_logs(): # Consulta los logs
+    if request.headers.get('Authorization') not in TOKENS_VALIDOS: # Verifica que el token sea valido
         return jsonify({"error": "Quien sos, bro?"}), 401
     
-    query = "SELECT * FROM logs WHERE 1=1"
+    query = "SELECT * FROM logs WHERE 1=1" # Consulta a la base de datos
     params = []
 
     filtros = {
@@ -61,22 +60,22 @@ def consultar_logs():
         'timestamp_end': 'timestamp <= ?',
         'received_at_start': 'received_at >= ?',
         'received_at_end': 'received_at <= ?'
-    }
+    } # Filtros para la consulta
 
-    for clave_url, condicion_sql in filtros.items():
-        valor = request.args.get(clave_url)
-        if valor:
-            query += f" AND {condicion_sql}"
-            params.append(valor)
+    for clave_url, condicion_sql in filtros.items(): # Itera sobre los filtros
+        valor = request.args.get(clave_url) # Obtiene los valores de los filtros
+        if valor: # Verifica que los valores no esten vacios
+            query += f" AND {condicion_sql}" # Agrega la condicion a la consulta
+            params.append(valor) # Agrega los valores a los parametros
 
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    filas = conn.execute(query + " ORDER BY id DESC", params).fetchall()
-    conn.close()
+    conn = sqlite3.connect(DATABASE) # Conecta a la base de datos
+    conn.row_factory = sqlite3.Row # Convierte las filas a diccionarios
+    filas = conn.execute(query + " ORDER BY id DESC", params).fetchall() # Ejecuta la consulta y obtiene los resultados
+    conn.close() # Cierra la conexion
 
-    return jsonify([dict(f) for f in filas]), 200
+    return jsonify([dict(f) for f in filas]), 200 # Retorna los resultados
 
 if __name__ == '__main__':
-    init_db()
+    init_db() # Inicializa la base de datos
     print("Servidor LogHero levantado en http://localhost:5000")
-    app.run(port=5000, debug=True)
+    app.run(port=5000, debug=True) # Ejecuta el servidor
