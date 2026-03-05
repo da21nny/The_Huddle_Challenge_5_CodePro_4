@@ -47,10 +47,10 @@ def simular(config): # Simula el envio de logs
         try:
             res = requests.post(URL, json=log, headers=headers) # Envía el log al servidor
             print(f"[{config['nombre']}] Log enviado -> Status: {res.status_code}") # Imprime el estado del request
-            if res.status_code == 401:
-                print(f"[{config['nombre']}] Rechazado. El servidor dijo: {res.text}")
+            if res.status_code == 401: # Verifica que el estado del request sea 401
+                print(f"[{config['nombre']}] Rechazado. El servidor dijo: {res.text}") # Imprime el mensaje de error
             else:
-                print(f"[{config['nombre']}] Log enviado -> Status: {res.status_code}")
+                print(f"[{config['nombre']}] Log enviado -> Status: {res.status_code}") # Imprime el estado del request
         except:
             print(f"[{config['nombre']}] Error de conexion.") # Imprime el error de conexion
 
