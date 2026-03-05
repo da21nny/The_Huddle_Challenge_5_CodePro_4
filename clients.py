@@ -9,7 +9,7 @@ URL = "http://localhost:5000/logs" # URL del servidor
 SERVICIOS = [ # Lista de servicios
     {
         "nombre": "servicio-a",
-        "token": "Token Servicio-A-123",
+        "token": "Token Servicio-123",
         "mensajes": [
             ("INFO",     "Operacion exitosa"),
             ("DEBUG",    "Verificando datos"),
@@ -47,6 +47,10 @@ def simular(config): # Simula el envio de logs
         try:
             res = requests.post(URL, json=log, headers=headers) # Envía el log al servidor
             print(f"[{config['nombre']}] Log enviado -> Status: {res.status_code}") # Imprime el estado del request
+            if res.status_code == 401:
+                print(f"[{config['nombre']}] Rechazado. El servidor dijo: {res.text}")
+            else:
+                print(f"[{config['nombre']}] Log enviado -> Status: {res.status_code}")
         except:
             print(f"[{config['nombre']}] Error de conexion.") # Imprime el error de conexion
 
