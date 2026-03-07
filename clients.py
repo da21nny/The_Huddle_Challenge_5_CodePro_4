@@ -1,12 +1,11 @@
 import requests
 import time
 import random
-import threading
+import sys
 from datetime import datetime, timezone
 
-URL = "http://localhost:5000/logs" # URL del servidor
+URL = "http://localhost:5000/logs" 
 
-# Configuración centralizada
 NOMBRE_SERVICIO = "Servicio-Unico"
 SERVICIOS = [
     {"token": "Token Servicio-A-123", "tipo": "autentico"},
@@ -20,36 +19,40 @@ MENSAJES = {
     "CRITICAL": "Sistema caido"
 }
 
-def simular(config): # Simula el envio de logs
-    print(f" Iniciando Simulacion de {NOMBRE_SERVICIO} ({config['tipo']})...")
+def enviar_log(session, config, numero):
     headers = {"Authorization": config['token'], "Content-Type": "application/json"}
-
-    while True:
-        severidad, texto = random.choice(list(MENSAJES.items()))
-        log = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "service": NOMBRE_SERVICIO,
-            "severity": severidad,
-            "message": texto
-        }
-
-        try:
-            res = requests.post(URL, json=log, headers=headers)
-            status = "EXITO" if res.status_code == 201 else "RECHAZADO"
-            print(f"[{NOMBRE_SERVICIO} - {config['tipo']}] Log enviado -> {status} ({res.status_code})")
-        except:
-            print(f"[{NOMBRE_SERVICIO}] Error de conexion.")
-
-        time.sleep(random.randint(2,5))
-
-if __name__ == '__main__':
-    print("Simulación de servicios (Ctrl+C para detener)")
-
-    for servicio in SERVICIOS:
-        threading.Thread(target=simular, args=(servicio,), daemon=True).start()
+    severidad, texto = random.choice(list(MENSAJES.items()))
+    
+    log = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "service": NOMBRE_SERVICIO,
+        "severity": severidad,
+        "message": texto
+    }
 
     try:
-        while True:
-            time.sleep(1)
+        # Añadimos un timeout corto para que Ctrl+C responda más rápido si el servidor se cuelga
+        res = session.post(URL, json=log, headers=headers, timeout=0.5)
+        if res.status_code == 401:
+            print(f"[{numero:02d}] [{config['tipo'].upper()}] RECHAZADO. Servidor dice: {res.text.strip()}")
+        else:
+            status = "EXITO" if res.status_code == 201 else f"ERROR ({res.status_code})"
+            print(f"[{numero:02d}] [{config['tipo'].upper()}] Envio -> {status}")
+    except requests.exceptions.RequestException as e:
+        print(f"[{numero:02d}] Error: {e}")
+
+if __name__ == '__main__':
+    print("Simulación rápida (50 envíos aleatorios)...")
+    
+    session = requests.Session() # Session para reutilizar la conexión y ser más rápido
+    
+    try:
+        for i in range(1, 51):
+            config = random.choice(SERVICIOS)
+            enviar_log(session, config, i)
+            # Sin sleep para velocidad máxima
     except KeyboardInterrupt:
-        print("\n Simulacion detenida")
+        print("\n[!] Detenido por el usuario.")
+        sys.exit(0)
+
+    print("\nSimulacion finalizada.")
