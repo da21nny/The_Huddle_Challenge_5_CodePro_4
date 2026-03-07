@@ -1,57 +1,95 @@
-# The_Huddle_Challenge_5_CodePro_4
-"Los sistemas caen. Los logs sobreviven." — proverbio DevOps
-
 # 🐧 LogHero - Servicio de Logging Distribuido
 
-LogHero es un sistema de logging centralizado construido con Python y Flask. Actúa como el "confesor de los sistemas", diseñado para recibir, validar, almacenar y filtrar logs provenientes de múltiples servicios de forma concurrente y segura.
+"Los sistemas caen. Los logs sobreviven. Si no lo logueaste, no pasó."
+
+LogHero es un sistema de logging centralizado construido con Python y Flask. Funciona como un receptor central seguro para múltiples microservicios, permitiendo la validación, persistencia y consulta de logs de forma eficiente.
+
+---
+
+## 🏗️ Arquitectura del Sistema
+
+```text
+   [ Microservicio A ]       [ Microservicio B ]
+          |                         |
+          |  (JSON POST + Token)    |  (JSON POST + Token)
+          └───────────┬─────────────┘
+                      |
+              ▼───────┴───────▼
+              |   LogHero IP  |
+              |   (API Port)  |
+              ▲───────┬───────▲
+                      |
+          ┌───────────┴───────────┐
+          |    Validación Token   |
+          ├───────────────────────┤
+          |   Escritura SQLite    |
+          └───────────┬───────────┘
+                      |
+              ▼───────┴───────▼
+              |    logs.db    |
+              └───────────────┘
+```
+
+---
+
+## 📂 Estructura del Proyecto
+
+```text
+The_Huddle_Challenge_5/
+├── app/                  # Núcleo de la aplicación
+│   ├── server.py         # Servidor API Flask (Recibe y consulta logs)
+│   └── clients.py        # Simulador de clientes (Genera tráfico de logs)
+├── test/                 # Pruebas automatizadas del sistema
+│   ├── server/           # Tests de integración del servidor
+│   └── clients/          # Tests de lógica de los clientes
+├── requirements.txt      # Dependencias del proyecto
+├── .gitignore            # Archivos excluidos de Git
+└── README.md             # Documentación principal
+```
+
+---
 
 ## ✨ Características Principales
 
-* **API RESTful**: Recepción (`POST /logs`) y consulta (`GET /logs`) de eventos del sistema.
-* **Autenticación por Tokens**: Seguridad estricta a través de la cabecera HTTP `Authorization`, rechazando accesos no autorizados con respuestas claras del servidor.
-* **Persistencia Robusta**: Almacenamiento local automatizado en **SQLite**, registrando tanto el momento del evento (`timestamp`) como la recepción en el servidor (`received_at`).
-* **Simulación de Tráfico Real**: Script de cliente optimizado para realizar ráfagas de envíos rápidos (50 envíos por ejecución) utilizando selecciones aleatorias entre tokens válidos y falsos para probar la seguridad del servidor.
-* **Optimización de Conexión**: Uso de `requests.Session` en los clientes para maximizar la velocidad de envío al reutilizar conexiones TCP.
+*   **API RESTful**: Recepción (`POST /logs`) y consulta (`GET /logs`) con filtros dinámicos.
+*   **Seguridad**: Autenticación estricta por tokens (`Authorization: Token ...`).
+*   **Persistencia**: Registro automático en **SQLite** con tiempos de evento y recepción.
+*   **Simulación Pro**: Generador de ráfagas rápidas (500+ envíos) con mezcla aleatoria de tokens válidos e inválidos.
+*   **Alto Rendimiento**: Reutilización de conexiones mediante `requests.Session` y comunicación directa por IP.
 
 ---
 
-## 🚀 Guía de Uso e Instalación
+## 🚀 Instalación y Uso
 
-### 1. Requisitos Previos
-Asegúrate de tener **Python 3.8+** instalado. Luego, instala las librerías necesarias ejecutando:
-```bash
-pip install flask requests
-```
-
-### 2. Levantar el Servidor Central
-
-El servidor debe estar en ejecución para empezar a escuchar las peticiones y gestionar la base de datos `logs.db`. En tu terminal, ejecuta:
+### 1. Clonar e instalar dependencias
+Asegúrate de tener Python instalado. Luego, instala los requisitos necesarios:
 
 ```bash
-python server.py
+pip install -r requirements.txt
 ```
 
-*El servidor quedará corriendo en `http://localhost:5000`.*
+### 2. Iniciar el Servidor
+Ejecuta el servidor central desde la carpeta raíz:
+
+```bash
+python app/server.py
+```
+*El servidor escuchará en `http://127.0.0.1:5000`.*
 
 ### 3. Ejecutar la Simulación de Clientes
-
-Abre una **segunda terminal** en la misma carpeta y ejecuta el script de clientes. Este realizará una ráfaga de 50 envíos aleatorios (auténticos y falsos) de forma secuencial y rápida:
+En otra terminal, lanza el simulador para empezar a llenar la base de datos:
 
 ```bash
-python clients.py
+python app/clients.py
 ```
-
-*Puedes detener la ráfaga en cualquier momento presionando `Ctrl+C`.*
-
----
-
-## 🛠️ Tecnologías Utilizadas
-
-* **Backend:** Python, Flask
-* **Base de Datos:** SQLite3
-* **Peticiones HTTP:** Librería `requests` (con optimización de `Session`)
-* **Gestión de Procesos:** Captura de señales de sistema (`sys.exit`) para paradas limpias.
+*Puedes detener la ráfaga en cualquier momento con `Ctrl+C`.*
 
 ---
 
+## 🛠️ Tecnologías
+*   **Servidor:** Flask, SQLite3
+*   **Cliente:** Requests (Session pooling)
+*   **Lógica:** Python 3.8+
+
+---
 *Desarrollado por Edgar Vega (Da21nny) - 💻 Software Developer.*
