@@ -6,64 +6,50 @@ from datetime import datetime, timezone
 
 URL = "http://localhost:5000/logs" # URL del servidor
 
-SERVICIOS = [ # Lista de servicios
-    {
-        "nombre": "servicio-a",
-        "token": "Token Servicio-123",
-        "mensajes": [
-            ("INFO",     "Operacion exitosa"),
-            ("DEBUG",    "Verificando datos"),
-            ("WARNING",  "Respuesta lenta"),
-            ("ERROR",    "Conexion perdida"),
-            ("CRITICAL", "Sistema caido"),
-        ]
-    }, # Servicio A
-    {
-        "nombre": "servicio-b",
-        "token": "Token Servicio-B-456",
-        "mensajes": [
-            ("INFO",     "Tarea completada"),
-            ("DEBUG",    "Procesando solicitud"),
-            ("WARNING",  "Recurso bajo"),
-            ("ERROR",    "Fallo inesperado"),
-            ("CRITICAL", "Error critico detectado"),
-        ]
-    } # Servicio B
+# Configuración centralizada
+NOMBRE_SERVICIO = "Servicio-Unico"
+SERVICIOS = [
+    {"token": "Token Servicio-A-123", "tipo": "autentico"},
+    {"token": "Token-Invalido-999", "tipo": "falso"}
 ]
+MENSAJES = {
+    "INFO": "Operacion exitosa",
+    "DEBUG": "Verificando datos",
+    "WARNING": "Respuesta lenta",
+    "ERROR": "Conexion perdida",
+    "CRITICAL": "Sistema caido"
+}
 
 def simular(config): # Simula el envio de logs
-    print(f" Iniciando Simulacion de {config['nombre']}...")
-    headers = {"Authorization": config['token'], "Content-Type": "application/json"} # Headers para el request
+    print(f" Iniciando Simulacion de {NOMBRE_SERVICIO} ({config['tipo']})...")
+    headers = {"Authorization": config['token'], "Content-Type": "application/json"}
 
-    while True: # Ciclo infinito para enviar logs
-        severidad, texto = random.choice(config['mensajes']) # Selecciona un mensaje aleatorio
+    while True:
+        severidad, texto = random.choice(list(MENSAJES.items()))
         log = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "service": config['nombre'],
+            "service": NOMBRE_SERVICIO,
             "severity": severidad,
             "message": texto
-        } # Crea el log
+        }
 
         try:
-            res = requests.post(URL, json=log, headers=headers) # Envía el log al servidor
-            if res.status_code == 401: # Verifica que el estado del request sea 401
-                print(f"[{config['nombre']}] Rechazado. El servidor dijo: {res.text}") # Imprime el mensaje de error
-            else:
-                print(f"[{config['nombre']}] Log enviado -> Status: {res.status_code}") # Imprime el estado del request
+            res = requests.post(URL, json=log, headers=headers)
+            status = "EXITO" if res.status_code == 201 else "RECHAZADO"
+            print(f"[{NOMBRE_SERVICIO} - {config['tipo']}] Log enviado -> {status} ({res.status_code})")
         except:
-            print(f"[{config['nombre']}] Error de conexion.") # Imprime el error de conexion
+            print(f"[{NOMBRE_SERVICIO}] Error de conexion.")
 
-        time.sleep(random.randint(2,5)) # Espera un tiempo aleatorio antes de enviar el siguiente log
+        time.sleep(random.randint(2,5))
 
 if __name__ == '__main__':
-    print("Levantando la flota de servicios simulados (Ctrl+C para detener)") # Imprime el mensaje de inicio
+    print("Simulación de servicios (Ctrl+C para detener)")
 
-    for servicio in SERVICIOS: # Itera sobre los servicios
-        hilo = threading.Thread(target=simular, args=(servicio,), daemon=True) # Crea un hilo para cada servicio
-        hilo.start() # Inicia el hilo
+    for servicio in SERVICIOS:
+        threading.Thread(target=simular, args=(servicio,), daemon=True).start()
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n Simulacion detenida") # Imprime el mensaje de detencion
+        print("\n Simulacion detenida")
