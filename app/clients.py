@@ -6,12 +6,12 @@ from datetime import datetime, timezone
 
 URL = "http://127.0.0.1:5000/logs" # URL con IP para evitar retrasos de resolución DNS en Windows
 
-NOMBRE_SERVICIO = "Servicio-Unico" # Nombre del servicio
 SERVICIOS = [
     {"token": "Token Servicio-A-123", "nombre": "Servicio A"},
     {"token": "Token Servicio-B-456", "nombre": "Servicio B"},
     {"token": "Token-Invalido-999", "nombre": "Servicio Invalido"}
-] # Tokens para la simulacion
+] # Tokens para la simulacion y nombres de los servicios
+
 MENSAJES = {
     "INFO": "Operacion exitosa",
     "DEBUG": "Verificando datos",
