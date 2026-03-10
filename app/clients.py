@@ -6,11 +6,12 @@ from datetime import datetime, timezone
 
 URL = "http://127.0.0.1:5000/logs" # URL con IP para evitar retrasos de resolución DNS en Windows
 
+TOKENS = {"Token Servicio-A-123", "Token Servicio-B-456", "Token-Invalido-999"} # Tokens para los servicios (2 validos y 1 invalido)
+
 SERVICIOS = [
-    {"token": "Token Servicio-A-123", "nombre": "Servicio A"},
-    {"token": "Token Servicio-B-456", "nombre": "Servicio B"},
-    {"token": "Token-Invalido-999", "nombre": "Servicio Invalido"}
-] # Tokens para la simulacion y nombres de los servicios
+    {"nombre": "Servicio A"},
+    {"nombre": "Servicio B"}
+] # Nombres de los servicios 
 
 MENSAJES = {
     "INFO": "Operacion exitosa",
@@ -21,7 +22,7 @@ MENSAJES = {
 }   # Mensajes para los logs
 
 def enviar_log(session, config, numero): # Funcion que envia los logs
-    headers = {"Authorization": config['token'], "Content-Type": "application/json"} # Cabeceras para la peticion
+    headers = {"Authorization": random.choice(list(TOKENS)), "Content-Type": "application/json"} # Cabeceras para la peticion
     severidad, texto = random.choice(list(MENSAJES.items())) # Selecciona una severidad y un mensaje aleatorio
     
     log = {
