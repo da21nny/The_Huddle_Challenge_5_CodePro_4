@@ -6,11 +6,13 @@ from datetime import datetime, timezone
 
 URL = "http://127.0.0.1:5000/logs" # URL con IP para evitar retrasos de resolución DNS en Windows
 
-NOMBRE_SERVICIO = "Servicio-Unico" # Nombre del servicio
+TOKENS = {"Token Servicio-A-123", "Token Servicio-B-456", "Token-Invalido-999"} # Tokens para los servicios (2 validos y 1 invalido)
+
 SERVICIOS = [
-    {"token": "Token Servicio-A-123"},
-    {"token": "Token-Invalido-999"}
-] # Tokens para la simulacion
+    {"nombre": "Servicio A"},
+    {"nombre": "Servicio B"}
+] # Nombres de los servicios 
+
 MENSAJES = {
     "INFO": "Operacion exitosa",
     "DEBUG": "Verificando datos",
@@ -20,12 +22,12 @@ MENSAJES = {
 }   # Mensajes para los logs
 
 def enviar_log(session, config, numero): # Funcion que envia los logs
-    headers = {"Authorization": config['token'], "Content-Type": "application/json"} # Cabeceras para la peticion
+    headers = {"Authorization": random.choice(list(TOKENS)), "Content-Type": "application/json"} # Cabeceras para la peticion
     severidad, texto = random.choice(list(MENSAJES.items())) # Selecciona una severidad y un mensaje aleatorio
     
     log = {
         "timestamp": datetime.now(timezone.utc).isoformat(), # Obtiene la fecha y hora actual
-        "service": NOMBRE_SERVICIO, # Nombre del servicio
+        "service": config['nombre'], # Nombre del servicio
         "severity": severidad, # Severidad del log
         "message": texto # Mensaje del log
     } # Crea el log con los datos del servicio
@@ -33,12 +35,12 @@ def enviar_log(session, config, numero): # Funcion que envia los logs
     try:
         res = session.post(URL, json=log, headers=headers, timeout=1) # Envia la peticion al servidor con los datos del log
         # Formato limpio: [Numero] NombreServicio (Status) -> Mensaje del Servidor
-        print(f"[{numero:03d}] {NOMBRE_SERVICIO} ({res.status_code}) -> {res.text.strip()}")
+        print(f"[{numero:03d}] {config['nombre']} ({res.status_code}) -> {res.text.strip()}")
     except requests.exceptions.RequestException as e: # Captura la excepcion si hay un error en la peticion
         print(f"[{numero:03d}] Error de conexion: {e}")
 
 if __name__ == '__main__':
-    print(f"Simulación rápida de {NOMBRE_SERVICIO} (500 envíos)...") # Muestra un mensaje de que la simulacion ha comenzado
+    print(f"Simulación rápida de {SERVICIOS} (500 envíos)...") # Muestra un mensaje de que la simulacion ha comenzado
     session = requests.Session() # Crea una sesion para la peticion
     
     try:
