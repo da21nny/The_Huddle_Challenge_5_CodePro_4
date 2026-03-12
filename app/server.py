@@ -49,9 +49,6 @@ def recibir_log(): # Recibe los logs
 
 @app.route('/logs', methods=['GET']) # Define la ruta /logs
 def consultar_logs(): # Consulta los logs
-    if request.headers.get('Authorization') not in TOKENS_VALIDOS: # Verifica que el token sea valido
-        return jsonify({"error": "Quien sos, bro?"}), 401
-    
     query = "SELECT * FROM logs WHERE 1=1" # Consulta a la base de datos
     params = []
 
@@ -59,7 +56,9 @@ def consultar_logs(): # Consulta los logs
         'timestamp_start': 'timestamp >= ?',
         'timestamp_end': 'timestamp <= ?',
         'received_at_start': 'received_at >= ?',
-        'received_at_end': 'received_at <= ?'
+        'received_at_end': 'received_at <= ?',
+        'severity': 'severity = ?',
+        'service': 'service = ?'
     } # Filtros para la consulta
 
     for clave_url, condicion_sql in filtros.items(): # Itera sobre los filtros
@@ -70,7 +69,7 @@ def consultar_logs(): # Consulta los logs
 
     conn = sqlite3.connect(DATABASE) # Conecta a la base de datos
     conn.row_factory = sqlite3.Row # Convierte las filas a diccionarios
-    filas = conn.execute(query + " ORDER BY id DESC", params).fetchall() # Ejecuta la consulta y obtiene los resultados
+    filas = conn.execute(query + " ORDER BY id ASC", params).fetchall() # Ejecuta la consulta y obtiene los resultados
     conn.close() # Cierra la conexion
 
     return jsonify([dict(f) for f in filas]), 200 # Retorna los resultados
