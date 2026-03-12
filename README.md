@@ -4,6 +4,18 @@
 
 LogHero es un sistema de logging centralizado construido con Python y Flask. Funciona como un receptor central seguro para múltiples microservicios, permitiendo la validación, persistencia y consulta de logs de forma eficiente.
 
+## 📖 Descripción General
+LogHero nace como una solución al caos de la falta de visibilidad en sistemas distribuidos. En una arquitectura moderna, donde múltiples servicios interactúan simultáneamente, saber qué falló y cuándo es crítico. Este proyecto implementa un "Faro de Verdad": un servidor centralizado que recolecta, valida y almacena cada evento significativo del ecosistema, permitiendo un análisis posterior preciso y auditable.
+
+## ⚙️ Cómo Funciona
+El ciclo de vida de un log en LogHero sigue estos pasos:
+
+1.  **Emisión**: Los microservicios generan eventos en formato JSON. Cada evento contiene obligatoriamente: `timestamp`, `service`, `severity` y `message`.
+2.  **Autenticación**: Para garantizar la seguridad, cada cliente debe enviar un `Authorization: Token <token>` válido en los headers de su petición POST.
+3.  **Recepción y Validacion**: El servidor LogHero recibe el JSON, verifica que el token sea reconocido y que el formato de los datos sea correcto. Si algo falla (token inválido o campos faltantes), el servidor responde con errores descriptivos (ej. `"Quién sos, bro?"` para fallos de auth).
+4.  **Persistencia**: Los logs válidos se guardan inmediatamente en una base de datos SQLite (`logs.db`). El servidor añade automáticamente una marca de tiempo de recepción (`received_at`) para diferenciar cuándo ocurrió el evento de cuándo fue recibido.
+5.  **Explotación de Datos**: Los administradores pueden realizar consultas mediante el endpoint `GET /logs`, utilizando filtros dinámicos por rangos de fechas tanto para el momento de emisión como para el de recepción.
+
 ---
 
 ## 🏗️ Arquitectura del Sistema
