@@ -9,8 +9,8 @@ URL = "http://127.0.0.1:5000/logs" # URL con IP para evitar retrasos de resoluci
 TOKENS = {"Token Servicio-A-123", "Token Servicio-B-456", "Token-Invalido-999"} # Tokens para los servicios (2 validos y 1 invalido)
 
 SERVICIOS = [
-    {"nombre": "Servicio A"},
-    {"nombre": "Servicio B"}
+    {"nombre": "Servicio_A"},
+    {"nombre": "Servicio_B"}
 ] # Nombres de los servicios 
 
 MENSAJES = {
